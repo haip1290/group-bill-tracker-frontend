@@ -2,26 +2,41 @@ import { useState } from "react";
 
 const URL = "http://localhost:5000";
 
-const LoginPage = () => {
+const LoginPage = ({ handleLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submit");
+    setLoading(true);
+    setError(null);
+    const payload = { email, password };
     fetch(URL + "/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(payload),
     })
       .then((res) => {
-        if (res.status !== 200) {
-          throw new Error("Error in login");
+        if (!res.ok) {
+          console.log("Login error ", res);
+          setError(res.message);
+          return res.json().then((data) => {
+            throw new Error(data.message || "Login failed");
+          });
         }
         return res.json();
       })
-      .then((data) => console.log(data))
-      .catch((err) => console.log("Fetch Error: ", err));
+      .then((data) => {
+        setLoading(false);
+        handleLogin(data.data);
+      })
+      .catch((err) => {
+        console.log("Fetch Error: ", err);
+        setError(err.message || "Something went wrong");
+        setLoading(false);
+      });
   };
   return (
     <>
@@ -43,8 +58,11 @@ const LoginPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         ></input>
-        <button>Login</button>
+        <button disabled={loading}>
+          {loading ? "Logging in ..." : "Login"}
+        </button>
       </form>
+      {error && <div>{error}</div>}
     </>
   );
 };
