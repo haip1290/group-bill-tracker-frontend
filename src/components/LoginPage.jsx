@@ -1,19 +1,21 @@
 import { useState } from "react";
 
-const URL = "http://localhost:5000";
-
 const LoginPage = ({ handleLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const { handleLogin } = useContext(AuthContext);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     const payload = { email, password };
-    fetch(URL + "/login", {
+    const URL = "http://localhost:5000/login";
+
+    fetch(URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -28,9 +30,10 @@ const LoginPage = ({ handleLogin }) => {
         }
         return res.json();
       })
-      .then((data) => {
+      .then((res) => {
         setLoading(false);
-        handleLogin(data.data);
+        const { accessToken, user } = res.data;
+        handleLogin(accessToken, user);
       })
       .catch((err) => {
         console.log("Fetch Error: ", err);
