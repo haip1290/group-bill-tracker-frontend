@@ -1,6 +1,6 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
-const AuthContext = createContext({
+export const AuthContext = createContext({
   user: {},
   token: null,
   handleLogin: () => {},
@@ -16,18 +16,38 @@ const AuthProvider = ({ children }) => {
     setUser(user);
   };
 
+  /**
+   * @description this function call /logout endpoint
+   * then clear access token and user info in context
+   */
+
   const handleLogout = async () => {
-    setAccessToken(null);
-    setUser(null);
     // fetch logout endpoint
     try {
+      // call /logout endpint
       const URL = "http://localhost:5000/logout";
-      await fetch(URL, { method: "POST" });
+      const res = await fetch(URL, { method: "POST" });
+      // only clear token and user if response ok
+      if (res.ok) {
+        setAccessToken(null);
+        setUser(null);
+        console.log("Logout successful");
+      } else {
+        // notice user logout fail
+        const error = res.json();
+        console.error("Failed to logout ", error);
+        alert("Logout failed. Please try again"); // need to implement modal here
+      }
     } catch (e) {
       console.error("Logout failed:", e);
     }
   };
-
+  /**
+   * @description this function get new access token from backend then set it into context
+   * if it fails to get new token, it call @see handleLogout
+   *
+   * @returns the new access token
+   */
   const refreshToken = async () => {
     try {
       const url = "http://localhost/auth/refresh";
@@ -45,6 +65,16 @@ const AuthProvider = ({ children }) => {
       return null;
     }
   };
+
+  /**
+   * @description this function input access token into headers before calling fetch from backend
+   * in case it fails to fetch, it will try to @see refreshToken and fetch again with new access token
+   * then return the response
+   *
+   * @param {string} URL
+   * @param {object} options
+   * @returns {Promise <object || null>}
+   */
 
   const fetchWithAuth = async (URL, options = {}) => {
     const headers = {
@@ -66,6 +96,12 @@ const AuthProvider = ({ children }) => {
     }
     return res;
   };
+
+  /**
+   * @description this hook fetch /refresh endpoint from backend
+   * to check if user is already authenticated or not
+   * in case user is authenticated, it will set new access token and user info into context
+   */
 
   useEffect(() => {
     const checkAuth = async () => {

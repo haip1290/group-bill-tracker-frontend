@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from "./AuthProvider";
 
-const LoginPage = ({ handleLogin }) => {
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const { handleLogin } = useContext(AuthContext);
-
+  /**
+   * @description this function handle user's login
+   * it call /login endpoint then pass data to @see handleLogin
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
