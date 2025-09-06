@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "./AuthProvider";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -7,6 +8,7 @@ const LoginPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
   const { handleLogin } = useContext(AuthContext);
   /**
    * @description this function handle user's login
@@ -26,7 +28,7 @@ const LoginPage = () => {
     })
       .then((res) => {
         if (!res.ok) {
-          console.log("Login error ", res);
+          console.error("Login error ", res);
           setError(res.message);
           return res.json().then((data) => {
             throw new Error(data.message || "Login failed");
@@ -38,6 +40,7 @@ const LoginPage = () => {
         setLoading(false);
         const { accessToken, user } = res.data;
         handleLogin(accessToken, user);
+        navigate("/dashboard");
       })
       .catch((err) => {
         console.log("Fetch Error: ", err);
@@ -49,26 +52,31 @@ const LoginPage = () => {
     <>
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email: </label>
-        <input
-          type="text"
-          placeholder="Email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        ></input>
-        <label htmlFor="password">Password: </label>
-        <input
-          type="password"
-          placeholder="Password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        ></input>
-        <button disabled={loading}>
-          {loading ? "Logging in ..." : "Login"}
-        </button>
+        <div>
+          <label htmlFor="email">Email: </label>
+          <input
+            type="text"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          ></input>
+        </div>
+        <div>
+          <label htmlFor="password">Password: </label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          ></input>
+        </div>
+        <div>
+          <button disabled={loading}>
+            {loading ? "Logging in ..." : "Login"}
+          </button>
+        </div>
       </form>
+      <Link to="/signup">Don't have an account yet? Sign Up here</Link>
       {error && <div>{error}</div>}
     </>
   );

@@ -25,6 +25,7 @@ const AuthProvider = ({ children }) => {
     // fetch logout endpoint
     try {
       // call /logout endpint
+      console.log("Login...");
       const URL = "http://localhost:5000/logout";
       const res = await fetch(URL, { method: "POST" });
       // only clear token and user if response ok
@@ -50,7 +51,7 @@ const AuthProvider = ({ children }) => {
    */
   const refreshToken = async () => {
     try {
-      const url = "http://localhost/auth/refresh";
+      const url = "http://localhost:5000/auth/refresh";
       const res = await fetch(url, { method: "POST" });
       if (!res.ok) {
         throw new Error("Refresh token failed");
@@ -91,7 +92,7 @@ const AuthProvider = ({ children }) => {
           ...options.headers,
           Authorization: `Bearer ${newAccessToken}`,
         };
-        res = await fetch(URL, { ...options, newHeaders });
+        res = await fetch(URL, { ...options, headers: newHeaders });
       }
     }
     return res;
@@ -110,7 +111,7 @@ const AuthProvider = ({ children }) => {
         const URL = "http://localhost:5000/auth/refresh";
         const res = await fetch(URL, { method: "POST" });
         if (res.ok) {
-          const data = res.json();
+          const data = await res.json();
           setAccessToken(data.data.accessToken);
           setUser(data.data.user);
         } else {
