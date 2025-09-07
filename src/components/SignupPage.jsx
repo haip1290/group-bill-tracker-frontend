@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { redirect, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const [loading, setLoading] = useState(false);
@@ -71,6 +71,12 @@ const SignupPage = () => {
           </button>
         </div>
       </form>
+      <div>
+        <p>
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
+
       {error && <div>{error}</div>}
     </>
   );

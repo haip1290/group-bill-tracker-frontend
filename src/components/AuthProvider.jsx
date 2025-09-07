@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext({
   user: {},
@@ -10,7 +11,7 @@ export const AuthContext = createContext({
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-
+  const navigate = useNavigate();
   const handleLogin = (accessToken, user) => {
     setAccessToken(accessToken);
     setUser(user);
@@ -32,6 +33,7 @@ const AuthProvider = ({ children }) => {
       if (res.ok) {
         setAccessToken(null);
         setUser(null);
+        navigate("/login");
         console.log("Logout successful");
       } else {
         // notice user logout fail
