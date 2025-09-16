@@ -4,7 +4,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardPage from "./DashboardPage";
 
 const ProtectedRoute = () => {
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, isAuthFetching } = useContext(AuthContext);
+  if (isAuthFetching) {
+    return <div>Loading ...</div>;
+  }
   if (!accessToken) {
     return <Navigate to="/login" replace></Navigate>; // replace to prevent pushing to history/user return to page
   }

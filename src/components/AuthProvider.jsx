@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, use } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext({
@@ -11,10 +11,13 @@ export const AuthContext = createContext({
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
+  const [isAuthFetching, setIsAuthFetching] = useState(true);
   const navigate = useNavigate();
+
   const handleLogin = (accessToken, user) => {
     setAccessToken(accessToken);
     setUser(user);
+    navigate("/dashboard");
   };
 
   /**
@@ -54,7 +57,7 @@ const AuthProvider = ({ children }) => {
   const refreshToken = async () => {
     try {
       const url = "http://localhost:5000/auth/refresh";
-      const res = await fetch(url, { method: "POST" });
+      const res = await fetch(url, { method: "POST", credentials: "include" });
       if (!res.ok) {
         throw new Error("Refresh token failed");
       }
@@ -83,6 +86,7 @@ const AuthProvider = ({ children }) => {
     const headers = {
       ...options.headers,
       Authorization: `Bearer ${accessToken}`,
+      credentials: "include",
     };
     let res = await fetch(URL, { ...options, headers });
     if ((res.status === 401 || res.status === 403) && accessToken) {
@@ -111,7 +115,10 @@ const AuthProvider = ({ children }) => {
       try {
         // fetch dashboard
         const URL = "http://localhost:5000/auth/refresh";
-        const res = await fetch(URL, { method: "POST" });
+        const res = await fetch(URL, {
+          method: "POST",
+          credentials: "include",
+        });
         if (res.ok) {
           const data = await res.json();
           setAccessToken(data.data.accessToken);
@@ -123,12 +130,21 @@ const AuthProvider = ({ children }) => {
         console.error("Authentication check failed: ", error);
         setAccessToken(null);
         setUser(null);
+      } finally {
+        setIsAuthFetching(false);
       }
-      checkAuth();
     };
+    checkAuth();
   }, []);
 
-  const value = { user, accessToken, handleLogin, handleLogout, fetchWithAuth };
+  const value = {
+    user,
+    accessToken,
+    handleLogin,
+    handleLogout,
+    fetchWithAuth,
+    isAuthFetching,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

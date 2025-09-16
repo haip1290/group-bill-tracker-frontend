@@ -1,10 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthProvider";
+import NavBar from "./NavBar";
+import CreateActivityModal from "./CreateActivityModal";
 
 const DashboardPage = () => {
   const { user, handleLogout, fetchWithAuth } = useContext(AuthContext);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   /**
    * @description this method fetch dashboard info from backend
@@ -30,10 +33,17 @@ const DashboardPage = () => {
   }, []);
   return (
     <>
-      <h1>Dashboard</h1>
-      <h2>Welcome {user?.email}</h2>
-      <div>{loading ? "Loading..." : message}</div>
-      <button onClick={handleLogout}>Log out</button>
+      <NavBar user={user} handleLogout={handleLogout}></NavBar>
+      <div>
+        <h1>Dashboard</h1>
+        <h2>Welcome {user?.email}</h2>
+        <div>{loading ? "Loading..." : message}</div>
+        <button onClick={handleLogout}>Log out</button>
+      </div>
+      <CreateActivityModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      ></CreateActivityModal>
     </>
   );
 };
