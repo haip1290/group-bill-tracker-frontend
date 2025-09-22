@@ -31,6 +31,37 @@ const DashboardPage = () => {
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  const handleCreateActivitySubmit = async (activityData) => {
+    try {
+      // call backend to create activity
+      const URL = "http://localhost:5000/activities";
+      const res = await fetchWithAuth(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(activityData),
+      });
+      // check if res from fetch return error
+      if (!res.ok) {
+        console.log("Failed to create activity");
+      }
+      // close modal
+      onModelClose();
+      // fetch dashboard again
+      fetchDashboard();
+    } catch (error) {
+      console.error("Error creating activity ", error);
+    }
+  };
+
+  const handleCreateActivity = () => {
+    setIsModalOpen(true);
+  };
+
+  const onModelClose = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <>
       <NavBar user={user} handleLogout={handleLogout}></NavBar>
@@ -38,11 +69,13 @@ const DashboardPage = () => {
         <h1>Dashboard</h1>
         <h2>Welcome {user?.email}</h2>
         <div>{loading ? "Loading..." : message}</div>
+        <button onClick={handleCreateActivity}>Create Activity</button>
         <button onClick={handleLogout}>Log out</button>
       </div>
       <CreateActivityModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={onModelClose}
+        onCreateActivity={handleCreateActivitySubmit}
       ></CreateActivityModal>
     </>
   );
