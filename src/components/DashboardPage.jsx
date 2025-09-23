@@ -5,7 +5,8 @@ import CreateActivityModal from "./CreateActivityModal";
 
 const DashboardPage = () => {
   const { user, handleLogout, fetchWithAuth } = useContext(AuthContext);
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState("");
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -13,15 +14,15 @@ const DashboardPage = () => {
    * @description this method fetch dashboard info from backend
    * used in useEffect hook
    */
-  const fetchDashboard = async () => {
+  const fetchUserActivities = async () => {
     try {
-      const URL = "http://localhost:5000/users/dashboard";
+      const URL = "http://localhost:5000/activities";
       const res = await fetchWithAuth(URL);
       if (!res.ok) {
         throw new Error("Faid to fetch dashboard data");
       }
       const data = await res.json();
-      setMessage(data.message);
+      setActivities(data.data.activities);
     } catch (error) {
       setMessage("Error " + error.message);
     } finally {
@@ -29,7 +30,7 @@ const DashboardPage = () => {
     }
   };
   useEffect(() => {
-    fetchDashboard();
+    fetchUserActivities();
   }, []);
 
   const handleCreateActivitySubmit = async (activityData) => {
@@ -47,8 +48,8 @@ const DashboardPage = () => {
       }
       // close modal
       onModelClose();
-      // fetch dashboard again
-      fetchDashboard();
+      // fetch user activity again
+      fetchUserActivities();
     } catch (error) {
       console.error("Error creating activity ", error);
     }
@@ -72,6 +73,15 @@ const DashboardPage = () => {
         <button onClick={handleCreateActivity}>Create Activity</button>
         <button onClick={handleLogout}>Log out</button>
       </div>
+
+      {activities.length > 0 && (
+        <div>
+          {activities.map((activity) => (
+            <div>{activity.name}</div>
+          ))}
+        </div>
+      )}
+
       <CreateActivityModal
         isOpen={isModalOpen}
         onClose={onModelClose}
