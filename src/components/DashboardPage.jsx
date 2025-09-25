@@ -77,7 +77,9 @@ const DashboardPage = () => {
       {activities.length > 0 && (
         <div>
           {activities.map((activity) => (
-            <div>{activity.name}</div>
+            <div>
+              {activity.name} {activity.date.split("T")[0]}
+            </div>
           ))}
         </div>
       )}

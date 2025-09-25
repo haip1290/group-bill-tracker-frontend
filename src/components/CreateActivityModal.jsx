@@ -2,13 +2,26 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthProvider";
 
 const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
-  const { fetchWithAuth } = useContext(AuthContext);
+  const { user, fetchWithAuth } = useContext(AuthContext);
   const [activityName, setActivityName] = useState("");
   const [totalCost, setTotalCost] = useState(0);
   const [date, setDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [participants, setParticipants] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+
+  // handle adding user to participant list
+  useEffect(() => {
+    // check participants length
+    if (isOpen && user && participants.length === 0) {
+      const currentUserParticipant = {
+        id: user.id,
+        email: user.email,
+        amount: 0,
+      };
+      setParticipants([currentUserParticipant]);
+    }
+  }, [isOpen, user]);
 
   // handle searching for participant
   useEffect(() => {
@@ -36,6 +49,15 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
       setSearchResults([]);
     }
   }, [searchTerm]);
+
+  const resetFormState = () => {
+    setActivityName("");
+    setTotalCost(0);
+    setDate("");
+    setSearchTerm("");
+    setParticipants([]);
+    setSearchResults([]);
+  };
 
   const handleAddParticipant = (participantToAdd) => {
     if (
@@ -79,6 +101,8 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
         amount: participant.amount,
       })),
     });
+    resetFormState();
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -172,7 +196,14 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
             <button type="submit">Create</button>
           </div>
         </form>
-        <button onClick={onClose}>Close</button>
+        <button
+          onClick={() => {
+            onClose();
+            resetFormState();
+          }}
+        >
+          Close
+        </button>
       </div>
     </div>
   );
