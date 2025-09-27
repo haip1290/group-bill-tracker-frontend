@@ -1,14 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthProvider";
 import NavBar from "./NavBar";
-import CreateActivityModal from "./CreateActivityModal";
-
+import DashboardContent from "./DashboardContent";
 const DashboardPage = () => {
   const { user, handleLogout, fetchWithAuth } = useContext(AuthContext);
   const [message, setMessage] = useState("");
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   /**
    * @description this method fetch dashboard info from backend
@@ -24,7 +23,8 @@ const DashboardPage = () => {
       const data = await res.json();
       setActivities(data.data.activities);
     } catch (error) {
-      setMessage("Error " + error.message);
+      console.error("Error fetching activities ", error.message);
+      setMessage("Error loading activities");
     } finally {
       setLoading(false);
     }
@@ -33,7 +33,7 @@ const DashboardPage = () => {
     fetchUserActivities();
   }, []);
 
-  const handleCreateActivitySubmit = async (activityData) => {
+  const handleFormSubmition = async (activityData) => {
     try {
       // call backend to create activity
       const URL = "http://localhost:5000/activities";
@@ -46,8 +46,8 @@ const DashboardPage = () => {
       if (!res.ok) {
         console.log("Failed to create activity");
       }
-      // close modal
-      onModelClose();
+      // close form
+      handleCloseForm();
       // fetch user activity again
       fetchUserActivities();
     } catch (error) {
@@ -55,12 +55,12 @@ const DashboardPage = () => {
     }
   };
 
-  const handleCreateActivity = () => {
-    setIsModalOpen(true);
+  const handleOpenForm = () => {
+    setIsFormOpen(true);
   };
 
-  const onModelClose = () => {
-    setIsModalOpen(false);
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
   };
 
   return (
@@ -69,26 +69,19 @@ const DashboardPage = () => {
       <div>
         <h1>Dashboard</h1>
         <h2>Welcome {user?.email}</h2>
-        <div>{loading ? "Loading..." : message}</div>
-        <button onClick={handleCreateActivity}>Create Activity</button>
-        <button onClick={handleLogout}>Log out</button>
+        {!isFormOpen && (
+          <button onClick={handleOpenForm}>Create Activity</button>
+        )}
       </div>
 
-      {activities.length > 0 && (
-        <div>
-          {activities.map((activity) => (
-            <div>
-              {activity.name} {activity.date.split("T")[0]}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <CreateActivityModal
-        isOpen={isModalOpen}
-        onClose={onModelClose}
-        onCreateActivity={handleCreateActivitySubmit}
-      ></CreateActivityModal>
+      <DashboardContent
+        isFormOpen={isFormOpen}
+        loading={loading}
+        activities={activities}
+        message={message}
+        handleCloseForm={handleCloseForm}
+        handleFormSubmition={handleFormSubmition}
+      ></DashboardContent>
     </>
   );
 };

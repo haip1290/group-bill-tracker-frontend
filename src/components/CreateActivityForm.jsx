@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthProvider";
 import ParticipantSearchInput from "./ParticipantSearchInput";
+import ParticipantsList from "./ParticipantsList";
 
-const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
+const CreateActivityForm = ({ onClose, onCreateActivity }) => {
   const { user } = useContext(AuthContext);
   const [activityName, setActivityName] = useState("");
   const [totalCost, setTotalCost] = useState(0);
@@ -12,7 +13,7 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
   // handle adding user to participant list
   useEffect(() => {
     // check participants length
-    if (isOpen && user && participants.length === 0) {
+    if (user && participants.length === 0) {
       const currentUserParticipant = {
         id: user.id,
         email: user.email,
@@ -20,16 +21,7 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
       };
       setParticipants([currentUserParticipant]);
     }
-  }, [isOpen, user]);
-
-  const resetFormState = () => {
-    setActivityName("");
-    setTotalCost(0);
-    setDate("");
-    setSearchTerm("");
-    setParticipants([]);
-    setSearchResults([]);
-  };
+  }, [user]);
 
   const handleAddParticipant = (participantToAdd) => {
     if (
@@ -39,25 +31,6 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
     ) {
       setParticipants([...participants, { ...participantToAdd, amount: 0 }]);
     }
-  };
-
-  const handleRemoveParticipant = (participantToRemove) => {
-    setParticipants(
-      participants.filter(
-        (participant) => participant.id !== participantToRemove.id
-      )
-    );
-  };
-
-  const handleAmountChange = (participantId, newAmount) => {
-    const amountToUpdate = newAmount === "" ? "" : Number(newAmount);
-    setParticipants(
-      participants.map((participant) =>
-        participant.id === participantId
-          ? { ...participant, amount: amountToUpdate }
-          : participant
-      )
-    );
   };
 
   const handleSubmit = (e) => {
@@ -72,11 +45,8 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
       date,
       users: submissionUsers,
     });
-    resetFormState();
     onClose();
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
@@ -117,36 +87,12 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
             />
           </div>
           <ParticipantSearchInput
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            searchResults={searchResults}
-            setSearchResults={setSearchResults}
             handleAddParticipant={handleAddParticipant}
           ></ParticipantSearchInput>
-          {participants.length > 0 && (
-            <div className="added-participants">
-              {participants.map((participant) => (
-                <span key={participant.id} className="participant-tag">
-                  {participant.email} Amount:
-                  <input
-                    type="number"
-                    id={`amount-${participant.id}`}
-                    value={participant.amount}
-                    min={0}
-                    onChange={(e) =>
-                      handleAmountChange(participant.id, e.target.value)
-                    }
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveParticipant(participant)}
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
+          <ParticipantsList
+            participants={participants}
+            setParticipants={setParticipants}
+          ></ParticipantsList>
           <div>
             <button type="submit">Create</button>
           </div>
@@ -164,4 +110,4 @@ const CreateActivityModal = ({ isOpen, onClose, onCreateActivity }) => {
   );
 };
 
-export default CreateActivityModal;
+export default CreateActivityForm;
