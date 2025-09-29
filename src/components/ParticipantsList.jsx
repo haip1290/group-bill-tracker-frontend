@@ -1,4 +1,11 @@
+import { useContext } from "react";
+import { AuthContext } from "./AuthProvider";
+
 const ParticipantsList = ({ participants, setParticipants }) => {
+  const { user } = useContext(AuthContext);
+  const isUser = (participant) => {
+    return user.email === participant.email;
+  };
   const handleAmountChange = (participantId, newAmount) => {
     const amountToUpdate = newAmount === "" ? "" : Number(newAmount);
     setParticipants(
@@ -32,12 +39,14 @@ const ParticipantsList = ({ participants, setParticipants }) => {
                   handleAmountChange(participant.id, e.target.value)
                 }
               />
-              <button
-                type="button"
-                onClick={() => handleRemoveParticipant(participant)}
-              >
-                &times;
-              </button>
+              {!isUser(participant) && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveParticipant(participant)}
+                >
+                  &times;
+                </button>
+              )}
             </span>
           ))}
         </div>

@@ -27,9 +27,10 @@ const SignupPage = () => {
 
       if (!res.ok) {
         const data = await res.json();
-        const errMsg = data.errors[0];
-        console.error("Failed to sign up", errMsg);
-        throw new Error(errMsg);
+        const errorMsg = data.errors[0];
+        console.error("Failed to sign up", errorMsg);
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
       navigate("/login");
     } catch (error) {

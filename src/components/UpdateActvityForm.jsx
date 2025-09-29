@@ -1,27 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useState } from "react";
 import ParticipantSearchInput from "./ParticipantSearchInput";
 import ParticipantsList from "./ParticipantsList";
 
-const CreateActivityForm = ({ onCreateActivity }) => {
-  const { user } = useContext(AuthContext);
+const UpdateActivityForm = () => {
   const [activityName, setActivityName] = useState("");
   const [totalCost, setTotalCost] = useState(0);
   const [date, setDate] = useState("");
   const [participants, setParticipants] = useState([]);
-
-  // handle adding user to participant list
-  useEffect(() => {
-    // check participants length
-    if (user && participants.length === 0) {
-      const currentUserParticipant = {
-        id: user.id,
-        email: user.email,
-        amount: 0,
-      };
-      setParticipants([currentUserParticipant]);
-    }
-  }, [user]);
 
   const handleAddParticipant = (participantToAdd) => {
     if (
@@ -32,29 +17,15 @@ const CreateActivityForm = ({ onCreateActivity }) => {
       setParticipants([...participants, { ...participantToAdd, amount: 0 }]);
     }
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const submissionUsers = participants.map((participant) => ({
-      userId: participant.id,
-      amount: participant.amount === "" ? 0 : participant.amount,
-    }));
-    onCreateActivity({
-      name: activityName,
-      totalCost,
-      date,
-      users: submissionUsers,
-    });
-  };
-
   return (
     <div>
-      <h2>Create New Activity</h2>
-      <form onSubmit={handleSubmit}>
+      <h2>Update Activity</h2>
+      <form>
         <div>
           <label htmlFor="activity-name">Activity Name: </label>
           <input
             type="text"
+            name="activityName"
             id="activity-name"
             value={activityName}
             onChange={(e) => {
@@ -63,9 +34,10 @@ const CreateActivityForm = ({ onCreateActivity }) => {
           />
         </div>
         <div>
-          <label htmlFor="total-cost">Total Cost:</label>
+          <label htmlFor="total-cost">Total Cost: </label>
           <input
             type="number"
+            name="totalCost"
             id="total-cost"
             value={totalCost}
             onChange={(e) => {
@@ -74,9 +46,10 @@ const CreateActivityForm = ({ onCreateActivity }) => {
           />
         </div>
         <div>
-          <label htmlFor="date">Date:</label>
+          <label htmlFor="date">Date: </label>
           <input
             type="date"
+            name="date"
             id="date"
             value={date}
             onChange={(e) => {
@@ -92,11 +65,11 @@ const CreateActivityForm = ({ onCreateActivity }) => {
           setParticipants={setParticipants}
         ></ParticipantsList>
         <div>
-          <button type="submit">Create</button>
+          <button type="submit">Update</button>
         </div>
       </form>
     </div>
   );
 };
 
-export default CreateActivityForm;
+export default UpdateActivityForm;

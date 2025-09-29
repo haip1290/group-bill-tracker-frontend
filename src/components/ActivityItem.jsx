@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 const ActivityItem = ({ activity }) => {
+  const navigate = useNavigate();
   const totalPaid = activity.participants.reduce(
     (sum, participant) => sum + Number(participant.amount),
     0
@@ -28,9 +31,11 @@ const ActivityItem = ({ activity }) => {
         <h4>Detail Breakdown:</h4>
         <table>
           <thead>
-            <th>Participant</th>
-            <th>Paid</th>
-            <th>Owes</th>
+            <tr>
+              <th>Participant</th>
+              <th>Paid</th>
+              <th>Owes</th>
+            </tr>
           </thead>
           <tbody>
             {activity.participants.map((participant) => {
@@ -55,6 +60,13 @@ const ActivityItem = ({ activity }) => {
             })}
           </tbody>
         </table>
+        <button
+          onClick={() => {
+            navigate(`/activities/${activity.id}/update`);
+          }}
+        >
+          Edit
+        </button>
       </div>
     </div>
   );

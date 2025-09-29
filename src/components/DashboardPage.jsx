@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthProvider";
 import NavBar from "./NavBar";
-import DashboardContent from "./DashboardContent";
+import ActivitiesList from "./ActivitiesList";
+
 const DashboardPage = () => {
-  const { user, handleLogout, fetchWithAuth } = useContext(AuthContext);
-  const [message, setMessage] = useState("");
+  const { user, fetchWithAuth } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [message, setMessage] = useState("");
 
   /**
    * @description this method fetch dashboard info from backend
@@ -33,55 +33,17 @@ const DashboardPage = () => {
     fetchUserActivities();
   }, []);
 
-  const handleFormSubmition = async (activityData) => {
-    try {
-      // call backend to create activity
-      const URL = "http://localhost:5000/activities";
-      const res = await fetchWithAuth(URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(activityData),
-      });
-      // check if res from fetch return error
-      if (!res.ok) {
-        console.log("Failed to create activity");
-      }
-      // close form
-      handleCloseForm();
-      // fetch user activity again
-      fetchUserActivities();
-    } catch (error) {
-      console.error("Error creating activity ", error);
-    }
-  };
-
-  const handleOpenForm = () => {
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-  };
-
   return (
     <>
-      <NavBar user={user} handleLogout={handleLogout}></NavBar>
+      <NavBar></NavBar>
       <div>
         <h1>Dashboard</h1>
         <h2>Welcome {user?.email}</h2>
-        {!isFormOpen && (
-          <button onClick={handleOpenForm}>Create Activity</button>
-        )}
       </div>
 
-      <DashboardContent
-        isFormOpen={isFormOpen}
-        loading={loading}
-        activities={activities}
-        message={message}
-        handleCloseForm={handleCloseForm}
-        handleFormSubmition={handleFormSubmition}
-      ></DashboardContent>
+      {loading && <div>Loading...</div>}
+      {message && <div>Error: {message}</div>}
+      {!loading && <ActivitiesList activities={activities}></ActivitiesList>}
     </>
   );
 };
