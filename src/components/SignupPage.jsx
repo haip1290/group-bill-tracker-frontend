@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import FormField from "./FormField";
 
 const SignupPage = () => {
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ const SignupPage = () => {
 
       if (!res.ok) {
         const data = await res.json();
-        const errorMsg = data.errors[0];
+        const errorMsg = data.errors ? data.errors[0] : commonErrMsg;
         console.error("Failed to sign up", errorMsg);
         setError(errorMsg);
         throw new Error(errorMsg);
@@ -43,9 +44,8 @@ const SignupPage = () => {
   return (
     <>
       <h1>Signup</h1>
-      <form>
-        <div>
-          <label htmlFor="email">Email: </label>
+      <form onSubmit={handleSignup}>
+        <FormField label={"Email: "} id={"email"}>
           <input
             type="text"
             id="email"
@@ -54,9 +54,8 @@ const SignupPage = () => {
               setEmail(e.target.value);
             }}
           ></input>
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
+        </FormField>
+        <FormField label={"Password: "} id={"password"}>
           <input
             type="password"
             id="password"
@@ -65,9 +64,9 @@ const SignupPage = () => {
               setPassword(e.target.value);
             }}
           />
-        </div>
+        </FormField>
         <div>
-          <button onClick={handleSignup}>
+          <button type="submit" disabled={loading}>
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </div>

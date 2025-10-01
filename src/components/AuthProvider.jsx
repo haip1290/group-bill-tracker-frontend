@@ -1,12 +1,20 @@
-import { createContext, useState, useEffect, use } from "react";
+import { createContext, useState, useEffect, use, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const AuthContext = createContext({
+const AuthContext = createContext({
   user: {},
   token: null,
   handleLogin: () => {},
   handleLogout: () => {},
 });
+
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw Error("Failed to get authorization context");
+  }
+  return context;
+};
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -137,7 +145,7 @@ const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const value = {
+  const authValue = {
     user,
     accessToken,
     handleLogin,
@@ -146,7 +154,9 @@ const AuthProvider = ({ children }) => {
     isAuthFetching,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>
+  );
 };
 
 export default AuthProvider;

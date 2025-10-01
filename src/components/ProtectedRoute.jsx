@@ -1,12 +1,11 @@
-import { useContext } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useAuthContext } from "./AuthProvider";
 import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardPage from "./DashboardPage";
 import CreateActivityPage from "./CreateActivityPage";
 import UpdateActivityPage from "./UpdateActivityPage";
 
 const ProtectedRoute = () => {
-  const { accessToken, isAuthFetching } = useContext(AuthContext);
+  const { accessToken, isAuthFetching } = useAuthContext();
   if (isAuthFetching) {
     return <div>Loading ...</div>;
   }

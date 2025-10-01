@@ -1,8 +1,7 @@
-import { useContext } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useAuthContext } from "./AuthProvider";
 
 const ParticipantsList = ({ participants, setParticipants }) => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuthContext();
   const isUser = (participant) => {
     return user.email === participant.email;
   };

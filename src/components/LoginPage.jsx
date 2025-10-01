@@ -1,6 +1,7 @@
-import { useState, useContext } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useState } from "react";
+import { useAuthContext } from "./AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
+import FormField from "./FormField";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { handleLogin } = useContext(AuthContext);
+  const { handleLogin } = useAuthContext();
   /**
    * @description this function handle user's login
    * it call /login endpoint then pass data to @see handleLogin
@@ -53,24 +54,22 @@ const LoginPage = () => {
     <>
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email: </label>
+        <FormField label={"Email: "} id={email}>
           <input
             type="text"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           ></input>
-        </div>
-        <div>
-          <label htmlFor="password">Password: </label>
+        </FormField>
+        <FormField label={"Password: "} id={"password"}>
           <input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           ></input>
-        </div>
+        </FormField>
         <div>
           <button disabled={loading}>
             {loading ? "Logging in ..." : "Login"}

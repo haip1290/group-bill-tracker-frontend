@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useEffect, useState } from "react";
+import { useAuthContext } from "./AuthProvider";
 
 const ParticipantSearchInput = ({ handleAddParticipant }) => {
-  const { fetchWithAuth } = useContext(AuthContext);
+  const { fetchWithAuth } = useAuthContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   // handle searching for participant
@@ -40,17 +40,14 @@ const ParticipantSearchInput = ({ handleAddParticipant }) => {
 
   return (
     <>
-      <div>
-        <label htmlFor="participants">Participants (seach by email):</label>
-        <input
-          type="text"
-          id="participants"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-          }}
-        />
-      </div>
+      <input
+        type="text"
+        id="participants"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+        }}
+      />
       {searchResults.length > 0 && (
         <div className="search-results-dropdown">
           {searchResults.map((participant) => (

@@ -1,12 +1,31 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useAuthContext } from "./AuthProvider";
 import ParticipantSearchInput from "./ParticipantSearchInput";
 import ParticipantsList from "./ParticipantsList";
+import FormField from "./FormField";
 
 const UpdateActivityForm = () => {
+  const { fetchWithAuth } = useAuthContext();
   const [activityName, setActivityName] = useState("");
   const [totalCost, setTotalCost] = useState(0);
   const [date, setDate] = useState("");
   const [participants, setParticipants] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const params = useParams();
+  const activityId = params.id;
+
+  useEffect(() => {
+    // fetch activity from DB
+    const fetchActivity = async () => {
+      console.log(`Fetching activity ${activityId} from DB`);
+      const URL = `http://localhost:5000/activities/${activityId}`;
+      const activity = await fetchWithAuth(URL);
+      try {
+      } catch (error) {}
+    };
+  }, []);
 
   const handleAddParticipant = (participantToAdd) => {
     if (
@@ -17,12 +36,13 @@ const UpdateActivityForm = () => {
       setParticipants([...participants, { ...participantToAdd, amount: 0 }]);
     }
   };
+
+  const handleSubmit = () => {};
   return (
     <div>
       <h2>Update Activity</h2>
-      <form>
-        <div>
-          <label htmlFor="activity-name">Activity Name: </label>
+      <form onSubmit={handleSubmit}>
+        <FormField label={"Activity Name: "} id={"activity-name"}>
           <input
             type="text"
             name="activityName"
@@ -32,9 +52,8 @@ const UpdateActivityForm = () => {
               setActivityName(e.target.value);
             }}
           />
-        </div>
-        <div>
-          <label htmlFor="total-cost">Total Cost: </label>
+        </FormField>
+        <FormField label={"Total Cost: "} id={"total-cost"}>
           <input
             type="number"
             name="totalCost"
@@ -44,9 +63,8 @@ const UpdateActivityForm = () => {
               setTotalCost(e.target.value);
             }}
           />
-        </div>
-        <div>
-          <label htmlFor="date">Date: </label>
+        </FormField>
+        <FormField label={"Date: "} id={"date"}>
           <input
             type="date"
             name="date"
@@ -56,16 +74,21 @@ const UpdateActivityForm = () => {
               setDate(e.target.value);
             }}
           />
-        </div>
-        <ParticipantSearchInput
-          handleAddParticipant={handleAddParticipant}
-        ></ParticipantSearchInput>
-        <ParticipantsList
-          participants={participants}
-          setParticipants={setParticipants}
-        ></ParticipantsList>
+        </FormField>
+        <FormField label={"Participants: "} id={"participants"}>
+          <ParticipantSearchInput
+            handleAddParticipant={handleAddParticipant}
+          ></ParticipantSearchInput>
+          <ParticipantsList
+            participants={participants}
+            setParticipants={setParticipants}
+          ></ParticipantsList>
+        </FormField>
+
         <div>
-          <button type="submit">Update</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Loading..." : "Update"}
+          </button>
         </div>
       </form>
     </div>

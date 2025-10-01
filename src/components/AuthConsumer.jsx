@@ -1,10 +1,9 @@
 import DashboardPage from "./DashboardPage";
 import LoginPage from "./LoginPage";
-import { useContext } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useAuthContext } from "./AuthProvider";
 
 const AuthConsumer = () => {
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken } = useAuthContext();
 
   return (
     <>

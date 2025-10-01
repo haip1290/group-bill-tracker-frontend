@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "./AuthProvider";
+import { useEffect, useState } from "react";
+import { useAuthContext } from "./AuthProvider";
 import NavBar from "./NavBar";
 import ActivitiesList from "./ActivitiesList";
 
 const DashboardPage = () => {
-  const { user, fetchWithAuth } = useContext(AuthContext);
+  const { user, fetchWithAuth } = useAuthContext();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
