@@ -40,20 +40,23 @@ const AuthProvider = ({ children }) => {
       console.log("Login...");
       const URL = "http://localhost:5000/logout";
       const res = await fetch(URL, { method: "POST" });
-      // only clear token and user if response ok
-      if (res.ok) {
-        setAccessToken(null);
-        setUser(null);
-        navigate("/login");
-        console.log("Logout successful");
-      } else {
-        // notice user logout fail
-        const error = res.json();
-        console.error("Failed to logout ", error);
-        alert("Logout failed. Please try again"); // need to implement modal here
+      // handle non ok response
+      if (!res.ok) {
+        const data = await res.json();
+        const errMsg = data.message || "Logout failed";
+        throw new Error(errMsg);
       }
+      // only clear token and user if response ok
+
+      setAccessToken(null);
+      setUser(null);
+      navigate("/login");
+      console.log("Logout successful");
     } catch (e) {
       console.error("Logout failed:", e);
+      navigate("/error", {
+        state: { message: e.message || "Log out failed due to server error" },
+      });
     }
   };
   /**
@@ -64,8 +67,9 @@ const AuthProvider = ({ children }) => {
    */
   const refreshToken = async () => {
     try {
-      const url = "http://localhost:5000/auth/refresh";
-      const res = await fetch(url, { method: "POST", credentials: "include" });
+      const URL = "http://localhost:5000/auth/refresh";
+      const options = { method: "POST", credentials: "include" };
+      const res = await fetch(URL, options);
       if (!res.ok) {
         throw new Error("Refresh token failed");
       }
@@ -123,10 +127,11 @@ const AuthProvider = ({ children }) => {
       try {
         // fetch dashboard
         const URL = "http://localhost:5000/auth/refresh";
-        const res = await fetch(URL, {
+        const options = {
           method: "POST",
           credentials: "include",
-        });
+        };
+        const res = await fetch(URL, options);
         if (res.ok) {
           const data = await res.json();
           setAccessToken(data.data.accessToken);

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardPage from "./DashboardPage";
 import CreateActivityPage from "./CreateActivityPage";
 import UpdateActivityPage from "./UpdateActivityPage";
+import ErrorPage from "./ErrorPage";
 
 const ProtectedRoute = () => {
   const { accessToken, isAuthFetching } = useAuthContext();
@@ -20,6 +21,7 @@ const ProtectedRoute = () => {
         path="/activities/:id/update"
         element={<UpdateActivityPage />}
       ></Route>
+      <Route path="/error" element={<ErrorPage></ErrorPage>}></Route>
       <Route
         path="*"
         element={<Navigate to="/dashboard" replace></Navigate>}

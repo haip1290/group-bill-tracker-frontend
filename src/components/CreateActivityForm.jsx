@@ -12,6 +12,7 @@ const CreateActivityForm = () => {
   const [totalCost, setTotalCost] = useState(0);
   const [date, setDate] = useState("");
   const [participants, setParticipants] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   // handle adding user to participant list
@@ -19,7 +20,7 @@ const CreateActivityForm = () => {
     // check participants length
     if (user && participants.length === 0) {
       const currentUserParticipant = {
-        id: user.id,
+        accountId: user.id,
         email: user.email,
         amount: 0,
       };
@@ -31,53 +32,76 @@ const CreateActivityForm = () => {
 
   const fetchActivitySubmition = async (activityData) => {
     try {
+      setLoading(true);
+      setErrorMsg("");
       // call backend to create activity
       const URL = "http://localhost:5000/activities";
-      const res = await fetchWithAuth(URL, {
+      const options = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(activityData),
-      });
+      };
+      const res = await fetchWithAuth(URL, options);
       // check if res from fetch return error
       if (!res.ok) {
         const data = await res.json();
-        console.error("Failed to create activity", data.data.errors[0]);
-        const message = data.message || "Failed to create activity";
-        setErrorMsg(message);
-        throw new Error(message);
+        console.error("Failed to create activity", data.message);
+        throw new Error(data.message);
       }
-      //clear error on success
-      setErrorMsg("");
       // navigate to dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating activity ", error);
-      setErrorMsg(error.message);
+      setErrorMsg("Failed to create activity");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAddParticipant = (participantToAdd) => {
     if (
       !participants.find(
-        (participant) => participant.id === participantToAdd.id
+        (participant) => participant.accountId === participantToAdd.accountId
       )
     ) {
       setParticipants([...participants, { ...participantToAdd, amount: 0 }]);
     }
   };
 
+  const handleRemoveParticipant = (participantToRemove) => {
+    setParticipants(
+      participants.filter(
+        (participant) => participant.accountId !== participantToRemove.accountId
+      )
+    );
+  };
+
+  const handleAmountChange = (participantAccountId, amountToUpdate) => {
+    setParticipants(
+      participants.map((participant) =>
+        participant.accountId === participantAccountId
+          ? { ...participant, amount: amountToUpdate }
+          : participant
+      )
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const submissionUsers = participants.map((participant) => ({
-      userId: participant.id,
-      amount: participant.amount === "" ? 0 : participant.amount,
+      accountId: participant.accountId,
+      amount: participant.amount === "" ? 0 : Number(participant.amount),
     }));
     fetchActivitySubmition({
       name: activityName,
-      totalCost,
+      totalCost: Number(totalCost),
       date,
       users: submissionUsers,
     });
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
   };
 
   return (
@@ -101,7 +125,7 @@ const CreateActivityForm = () => {
             id="total-cost"
             value={totalCost}
             onChange={(e) => {
-              setTotalCost(Number(e.target.value));
+              setTotalCost(e.target.value);
             }}
           ></input>
         </FormField>
@@ -124,12 +148,18 @@ const CreateActivityForm = () => {
           ></ParticipantSearchInput>
           <ParticipantsList
             participants={participants}
-            setParticipants={setParticipants}
+            handleRemoveParticipant={handleRemoveParticipant}
+            handleAmountChange={handleAmountChange}
           ></ParticipantsList>
         </FormField>
 
         <div>
-          <button type="submit">Create</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Loading" : "Create"}
+          </button>
+          <button type="cancel" onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       </form>
     </div>

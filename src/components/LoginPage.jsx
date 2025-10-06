@@ -30,8 +30,6 @@ const LoginPage = () => {
     })
       .then((res) => {
         if (!res.ok) {
-          console.error("Login error ", res);
-          setError(res.message);
           return res.json().then((data) => {
             throw new Error(data.message || "Login failed");
           });

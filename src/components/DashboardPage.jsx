@@ -17,10 +17,11 @@ const DashboardPage = () => {
     try {
       const URL = "http://localhost:5000/activities";
       const res = await fetchWithAuth(URL);
-      if (!res.ok) {
-        throw new Error("Faid to fetch dashboard data");
-      }
       const data = await res.json();
+      if (!res.ok) {
+        console.error(data.message);
+        throw new Error("Faid to fetch dashboard data", data.message);
+      }
       setActivities(data.data.activities);
     } catch (error) {
       console.error("Error fetching activities ", error.message);

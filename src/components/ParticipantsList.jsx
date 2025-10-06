@@ -1,41 +1,34 @@
 import { useAuthContext } from "./AuthProvider";
 
-const ParticipantsList = ({ participants, setParticipants }) => {
+const ParticipantsList = ({
+  participants,
+  handleAmountChange,
+  handleRemoveParticipant,
+}) => {
   const { user } = useAuthContext();
+
   const isUser = (participant) => {
     return user.email === participant.email;
   };
-  const handleAmountChange = (participantId, newAmount) => {
+  const oneAmountChange = (participantAccountId, newAmount) => {
     const amountToUpdate = newAmount === "" ? "" : Number(newAmount);
-    setParticipants(
-      participants.map((participant) =>
-        participant.id === participantId
-          ? { ...participant, amount: amountToUpdate }
-          : participant
-      )
-    );
+    handleAmountChange(participantAccountId, amountToUpdate);
   };
-  const handleRemoveParticipant = (participantToRemove) => {
-    setParticipants(
-      participants.filter(
-        (participant) => participant.id !== participantToRemove.id
-      )
-    );
-  };
+
   return (
     <>
       {participants.length > 0 && (
-        <div className="added-participants">
+        <div>
           {participants.map((participant) => (
-            <span key={participant.id} className="participant-tag">
+            <span key={participant.accountId}>
               {participant.email} Amount:
               <input
                 type="number"
-                id={`amount-${participant.id}`}
+                id={`amount-${participant.accountId}`}
                 value={participant.amount}
                 min={0}
                 onChange={(e) =>
-                  handleAmountChange(participant.id, e.target.value)
+                  oneAmountChange(participant.accountId, e.target.value)
                 }
               />
               {!isUser(participant) && (

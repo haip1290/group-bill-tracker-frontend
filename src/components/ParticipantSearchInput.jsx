@@ -19,7 +19,12 @@ const ParticipantSearchInput = ({ handleAddParticipant }) => {
             console.error("Error fetching for participant");
           }
           const data = await res.json();
-          setSearchResults(data.data.users);
+          const users = data.data.users;
+          const participants = users.map((user) => ({
+            accountId: user.id,
+            email: user.email,
+          }));
+          setSearchResults(participants);
           console.log("Finished searching for participants");
         } catch (error) {
           console.error("Error fetching for participants ", error);
@@ -27,6 +32,7 @@ const ParticipantSearchInput = ({ handleAddParticipant }) => {
         }
       };
       fetchParticipants();
+      // console.log("Participants ", searchResults);
     } else {
       setSearchResults([]);
     }
@@ -52,7 +58,7 @@ const ParticipantSearchInput = ({ handleAddParticipant }) => {
         <div className="search-results-dropdown">
           {searchResults.map((participant) => (
             <div
-              key={participant.id}
+              key={participant.accountId}
               onClick={() => onParticipantSelect(participant)}
             >
               {participant.email}
