@@ -16,9 +16,13 @@ const ActivityItem = ({ activity }) => {
       currency: "USD",
     }).format(amount);
   };
+  const statusLabel = activity.isFullyPaid ? "Fully Paid" : "Unpaid";
   return (
     <div>
-      <h3>{activity.name}</h3>
+      <h3>
+        {activity.name} <span>{statusLabel}</span>
+      </h3>
+
       <p>Date: {activity.date.split("T")[0]}</p>
       <div>
         <h4>Summary: </h4>

@@ -9,7 +9,7 @@ const DashboardPage = () => {
   const [activitiesStatus, setActivitiesStatus] = useState("unpaid");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const statusOptions = ["unpaid", "achieved"];
+  const statusOptions = ["paid", "unpaid"];
   /**
    * @description this method fetch dashboard info from backend
    * used in useEffect hook
@@ -58,7 +58,7 @@ const DashboardPage = () => {
       >
         {statusOptions.map((status) => (
           <option key={status} value={status}>
-            {status}
+            {status.charAt(0).toUpperCase() + status.slice(1)}
           </option>
         ))}
       </select>
