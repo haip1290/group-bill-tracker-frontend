@@ -1,4 +1,11 @@
-import { createContext, useState, useEffect, use, useContext } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  use,
+  useContext,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext({
@@ -22,18 +29,21 @@ const AuthProvider = ({ children }) => {
   const [isAuthFetching, setIsAuthFetching] = useState(true);
   const navigate = useNavigate();
 
-  const handleLogin = (accessToken, user) => {
-    setAccessToken(accessToken);
-    setUser(user);
-    navigate("/dashboard");
-  };
+  const handleLogin = useCallback(
+    (accessToken, user) => {
+      setAccessToken(accessToken);
+      setUser(user);
+      navigate("/dashboard");
+    },
+    [navigate]
+  );
 
   /**
    * @description this function call /logout endpoint
    * then clear access token and user info in context
    */
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     // fetch logout endpoint
     try {
       // call /logout endpint
@@ -58,14 +68,14 @@ const AuthProvider = ({ children }) => {
         state: { message: e.message || "Log out failed due to server error" },
       });
     }
-  };
+  }, [navigate]);
   /**
    * @description this function get new access token from backend then set it into context
    * if it fails to get new token, it call @see handleLogout
    *
    * @returns the new access token
    */
-  const refreshToken = async () => {
+  const refreshToken = useCallback(async () => {
     try {
       const URL = "http://localhost:5000/auth/refresh";
       const options = { method: "POST", credentials: "include" };
@@ -82,7 +92,7 @@ const AuthProvider = ({ children }) => {
       handleLogout();
       return null;
     }
-  };
+  }, [handleLogout]);
 
   /**
    * @description this function input access token into headers before calling fetch from backend
@@ -91,30 +101,47 @@ const AuthProvider = ({ children }) => {
    *
    * @param {string} URL
    * @param {object} options
+   * @param {AbortSignal} signal - signal to cancel the request
    * @returns {Promise <object || null>}
    */
 
-  const fetchWithAuth = async (URL, options = {}) => {
-    const headers = {
-      ...options.headers,
-      Authorization: `Bearer ${accessToken}`,
-      credentials: "include",
-    };
-    let res = await fetch(URL, { ...options, headers });
-    if ((res.status === 401 || res.status === 403) && accessToken) {
-      console.log("Token expired. Attempt to refresh token");
-      const newAccessToken = await refreshToken();
-      if (newAccessToken) {
-        console.log("Token refreshed. Fetch again");
-        const newHeaders = {
-          ...options.headers,
-          Authorization: `Bearer ${newAccessToken}`,
-        };
-        res = await fetch(URL, { ...options, headers: newHeaders });
+  const fetchWithAuth = useCallback(
+    async (URL, options = {}, signal) => {
+      const headers = {
+        ...options.headers,
+        Authorization: `Bearer ${accessToken}`,
+      };
+      const addedOptions = { credentials: "include" };
+      let res = await fetch(URL, {
+        ...options,
+        ...addedOptions,
+        headers,
+        signal,
+      });
+      // check response status and attempt to get new token if token expired
+      if (res.status === 401 || res.status === 403) {
+        console.log("Token expired. Attempt to refresh token");
+        const newAccessToken = await refreshToken();
+        if (newAccessToken) {
+          console.log("Token refreshed. Fetch again");
+          const newHeaders = {
+            ...options.headers,
+            Authorization: `Bearer ${newAccessToken}`,
+          };
+          res = await fetch(URL, {
+            ...options,
+            ...addedOptions,
+            headers: newHeaders,
+            signal,
+          });
+        } else {
+          throw new Error("Authentication failed after token refresh attempt");
+        }
       }
-    }
-    return res;
-  };
+      return res;
+    },
+    [accessToken, refreshToken]
+  );
 
   /**
    * @description this hook fetch /refresh endpoint from backend

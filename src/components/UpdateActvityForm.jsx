@@ -44,8 +44,6 @@ const UpdateActivityForm = () => {
     fetchActivity();
   }, [activityId]);
 
-  console.log("Participants ", participants);
-
   const handleAddParticipant = (participantToAdd) => {
     if (
       !participants.find(

@@ -1,7 +1,21 @@
 import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "./AuthProvider";
+import ParticipantTableRow from "./ParticipantTableRow";
+import { useState } from "react";
 
-const ActivityItem = ({ activity }) => {
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
+
+const ActivityItem = ({ activity, onActivityStatusChange }) => {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { fetchWithAuth } = useAuthContext();
   const navigate = useNavigate();
+  // calculate summary info (total cost, total amount paid, etc...) from activity
   const totalPaid = activity.participants.reduce(
     (sum, participant) => sum + Number(participant.amount),
     0
@@ -10,24 +24,57 @@ const ActivityItem = ({ activity }) => {
   const numberOfParticipants = activity.participants.length;
   const averageCost =
     numberOfParticipants > 0 ? totalCost / numberOfParticipants : 0;
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
+
+  // get label and buttun text from activity status
+  const statusText = ["unpaid", "paid"];
+  const statusLabel = statusText[Number(activity.isFullyPaid)];
+  const buttonText = statusText[Number(!activity.isFullyPaid)];
+
+  const flipActivitiStatus = async () => {
+    console.log(`Flip activity status`);
+    // call BE API to change status
+    const URL = `http://localhost:5000/activities/${activity.id}/paid`;
+    const options = {
+      method: "PATCH",
+    };
+    const res = await fetchWithAuth(URL, options);
+    const data = await res.json();
+    if (!res.ok) {
+      const errorMessage =
+        data.message || `Server return with status ${data.status}`;
+      throw new Error(`Fail to flip activity status. ${errorMessage}`);
+    }
+    return data.data;
   };
-  const statusLabel = activity.isFullyPaid ? "Fully Paid" : "Unpaid";
+
+  const onFlipStatus = () => {
+    console.log("Flipping activity status");
+    setLoading(true);
+    setError("");
+    flipActivitiStatus()
+      .then((data) => {
+        onActivityStatusChange();
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        setError("Failed to flip status");
+      });
+  };
   return (
     <div>
       <h3>
         {activity.name} <span>{statusLabel}</span>
       </h3>
-
+      <button onClick={onFlipStatus}>
+        {loading ? "Flipping..." : buttonText}
+      </button>
+      <p>{error}</p>
       <p>Date: {activity.date.split("T")[0]}</p>
       <div>
         <h4>Summary: </h4>
-        <span>Total Cost: {formatCurrency(totalCost)}</span>
         <span>Participants: {numberOfParticipants}</span>
+        <span>Total Cost: {formatCurrency(totalCost)}</span>
         <span>Cost per person: {formatCurrency(averageCost)}</span>
         <span>Total Paid: {formatCurrency(totalPaid)}</span>
       </div>
@@ -42,26 +89,14 @@ const ActivityItem = ({ activity }) => {
             </tr>
           </thead>
           <tbody>
-            {activity.participants.map((participant) => {
-              const paid = participant.amount;
-              const balance = paid - averageCost;
-              const owes = balance < 0 ? Math.abs(balance) : 0;
-              const owedBack = balance > 0 ? balance : 0;
-
-              return (
-                <tr key={participant.id}>
-                  <td>{participant.email}</td>
-                  <td>{formatCurrency(paid)}</td>
-                  <td>
-                    {balance < 0
-                      ? `Owes: ${formatCurrency(owes)}`
-                      : balance > 0
-                        ? `Gets Back: ${formatCurrency(owedBack)}`
-                        : `Settle`}
-                  </td>
-                </tr>
-              );
-            })}
+            {activity.participants.map((participant) => (
+              <ParticipantTableRow
+                key={participant.id}
+                participant={participant}
+                averageCost={averageCost}
+                formatCurrency={formatCurrency}
+              ></ParticipantTableRow>
+            ))}
           </tbody>
         </table>
         <button
